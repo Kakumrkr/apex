@@ -57,8 +57,10 @@ def run(name: str) -> int:
         elif name == "search-log":
             if auditor and event.get("tool_name") in ("WebSearch", "WebFetch"):
                 p = _paths(event)
-                urls = searchlog.extract(event.get("tool_input") or {})
-                urls += searchlog.extract(event.get("tool_response") or "")
+                payload = {k: event.get(k) for k in
+                           ("tool_input", "tool_response", "tool_result", "tool_output", "output")
+                           if event.get(k) is not None}
+                urls = searchlog.extract(payload)
                 searchlog.record(p, urls, event.get("tool_name"))
             return 0
         elif name == "subagent-stop":
