@@ -9,12 +9,10 @@ from __future__ import annotations
 import json
 import sys
 
-from . import guards, is_auditor, lint, searchlog
+from . import is_auditor
 import os
 
 from .paths import paths_for
-from .render import banner
-from .state import load_config
 
 
 def _emit_pre(decision: str, reason: str) -> None:
@@ -39,7 +37,13 @@ def _paths(event: dict):
 def run(name: str) -> int:
     event = _read_event()
     auditor = is_auditor(event.get("agent_type"))
+    # Non-auditor Bash/Read/PostToolUse calls never need the heavy modules.
+    if not auditor and name in ("guard-bash", "guard-reads", "search-log", "subagent-stop"):
+        return 0
     try:
+        from . import guards, lint, searchlog  # noqa: F401  (lazy for speed)
+        from .render import banner
+        from .state import load_config
         if name == "guard-writes":
             res = guards.guard_writes(event)
         elif name == "guard-reads":
