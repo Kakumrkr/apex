@@ -56,7 +56,7 @@ flowchart TB
 ## Delta mode (token guard)
 When `state.json.last_audit_sha` exists and the mode isn't `full`, the auditor:
 - spends ~80% of its file reads on `git diff <last_sha>..HEAD`
-- reuses its codebase map from `.claude/agent-memory/apex-auditor/MEMORY.md`
+- reuses its codebase map from its project memory (`.claude/agent-memory/apex*/MEMORY.md`)
 - spot-checks 2–3 untouched modules
 
 `quick` mode also skips web research and runs the auditor on Sonnet.

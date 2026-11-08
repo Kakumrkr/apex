@@ -121,6 +121,19 @@ apex lint: 3 error(s)
 In a real audit, this same check runs as a `SubagentStop` hook, so the auditor **can't finish** until it fixes these.
 Browse [`examples/demo-saas/.apex/roadmap.md`](examples/demo-saas/.apex/roadmap.md) to see the full output: the score trend chart, parity matrix, session graph, and packets.
 
+## Field-tested
+
+Apex was run end to end with headless Claude Code on a small TypeScript project:
+
+| Step | Result | Time | Cost |
+|---|---|---:|---:|
+| `/apex:audit quick` (first audit) | 2.7/10, Tier 1, 4 packets; vacuous test suite flagged; lint passed on first finalize | 2m | $0.40 |
+| `/apex:run-session S-001` | implemented inside targets, 5 real tests, DoD green, atomic `feat(apex): S-001 …` commit | 1m | $0.37 |
+| `/apex:audit quick` (delta) | 3.3/10 (+0.6); credited S-001 *and* caught a side effect it introduced, then planned S-005 to fix it | 1.3m | $0.32 |
+
+Across these runs the guards denied a heredoc edit, file redirection, and an unlisted `sed`, and the auditor adapted each time. No source file was changed by any audit.
+Numbers are from `quick` mode on a tiny repo. `standard`/`full` audits on Opus with web research cost more.
+
 ## What an audit produces
 
 ```text
@@ -167,7 +180,7 @@ A move of more than 1.5 points from the last audit needs a written `delta_justif
 
 After the first audit, the auditor:
 - spends ~80% of its reading on `git diff <last_audit_sha>..HEAD`
-- reuses its codebase map from project memory (`.claude/agent-memory/apex-auditor/MEMORY.md`)
+- reuses its codebase map from project memory (`.claude/agent-memory/apex*/MEMORY.md`)
 - spot-checks 2–3 untouched modules
 
 Research is cached for 28 days. `/apex:audit full` forces a complete re-scan; `--refresh` forces new research.

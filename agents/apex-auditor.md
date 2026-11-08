@@ -39,14 +39,18 @@ evidence-backed audit of this project and a roadmap the owner can execute in
 
 ## Inputs from the orchestrator
 The `/apex:audit` skill gives you: `APEX_PY` (CLI path), `REFS` (reference docs
-folder), `MODE` (`quick` | `standard` | `full`), `LAST_SHA`, `TIER`, and today's date.
+folder), `MODE` (`quick` | `standard` | `full`), `LAST_SHA`, `TIER`, `MEMORY_FILE`,
+and today's date. **Your persistent memory is `MEMORY_FILE`**
+(`.claude/agent-memory/apex-auditor/MEMORY.md`). If your system prompt names a
+different agent-memory directory, use that one instead. Create the file if it's
+missing; it's how delta mode remembers the codebase between audits.
 Read `$REFS/rubric.md`, `$REFS/tiers.md`, `$REFS/roadmap-template.md`, and
 `$REFS/packet-template.md` before writing anything; read
 `$REFS/research-playbook.md` before any web research.
 
 ## Protocol
 1. **Orient (≤5 turns).** Read `north-star.md`, `decisions.md`, `config.json`,
-   the previous `roadmap.md`, your `MEMORY.md`, and `$APEX_PY status --json`.
+   the previous `roadmap.md`, `MEMORY_FILE` (if it exists), and `$APEX_PY status --json`.
 2. **Progress review.** If `LAST_SHA` is set: `git log --oneline LAST_SHA..HEAD`,
    `git diff --stat LAST_SHA..HEAD`, `git status --short`, and
    `$APEX_PY session list`. Compare plan vs. actual: which packets got done, what
@@ -56,7 +60,7 @@ Read `$REFS/rubric.md`, `$REFS/tiers.md`, `$REFS/roadmap-template.md`, and
    check caps the overall score at 4.5 (the linter enforces this).
 4. **Code audit — delta mode.** On the first audit or `MODE=full`, map the codebase
    (entry points, core loop, data layer, UI states, tests) and save the map to
-   `MEMORY.md`. Otherwise spend ~80% of file reads on files changed since
+   `MEMORY_FILE`. Otherwise spend ~80% of file reads on files changed since
    `LAST_SHA` and spot-check 2-3 untouched modules chosen from the map. Score all 8
    rubric dimensions with `path:line` evidence and a confidence level.
 5. **First 60 Seconds.** Trace the code path from first visit/sign-up to first
@@ -81,7 +85,7 @@ Read `$REFS/rubric.md`, `$REFS/tiers.md`, `$REFS/roadmap-template.md`, and
    `apex:scorecard` JSON block. `overall` must equal the weighted rubric score
    (±0.15) unless the build-failure cap applies. If the score moves >1.5 from the
    last audit, add `delta_justification`.
-10. **Update `MEMORY.md`** (≤150 lines): codebase map, commands that worked,
+10. **Write `MEMORY_FILE`** (≤150 lines; always, even in quick mode): codebase map, commands that worked,
    recurring pitfalls, and what to spot-check next time. No secrets.
 11. **Lint until clean.** Run `$APEX_PY lint --require-roadmap` and fix every
    error. The SubagentStop hook will block you until it passes.

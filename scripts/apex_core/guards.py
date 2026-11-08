@@ -58,8 +58,10 @@ def guard_writes(event: dict):
     if inside and re.fullmatch(r"\.apex/research/[A-Za-z0-9._/-]+\.(md|json)", relp) and ".." not in relp:
         return ("allow", "Apex auditor: research cache")
     full = os.path.realpath(os.path.join(event.get("cwd") or _root(event), os.path.expanduser(str(path))))
+    # Claude Code names a plugin agent's memory dir after the plugin/agent (e.g. `apex`,
+    # `apex-auditor`, `apex:apex-auditor`), so accept any `apex*` directory.
     mem = re.search(r"[/\\]\.claude[/\\]agent-memory[/\\]([^/\\]+)[/\\]", full)
-    if mem and mem.group(1).split(":")[-1].endswith("apex-auditor") and full.endswith(".md"):
+    if mem and mem.group(1).startswith("apex") and full.endswith(".md"):
         return ("allow", "Apex auditor: agent memory")
     return ("deny", f"Apex auditor is read-only for your code. It may only write .apex/roadmap.md, "
             f".apex/sessions/S-###-*.md, .apex/research/*.md|json and its agent memory — not {relp}.")
@@ -97,7 +99,9 @@ JS_RUNNERS = {"npx", "pnpm", "yarn", "bun", "bunx", "npm"}
 PY_MODULES = {"pytest", "ruff", "mypy", "pyright", "pip", "pip_audit", "compileall", "unittest", "black", "isort"}
 AUDITOR_APEX_SUBS = {("status",), ("lint",), ("health",), ("detect",), ("version",), ("session", "list"),
                      ("session", "show"), ("session", "check"), ("decision", "list")}
-DEVNULL = re.compile(r"(?<!\S)(?:\d?>>?|&>)\s*/dev/null(?!\S)|(?<!\S)2>&1(?!\S)")
+_END = r"(?=\s|$|[;&|])"
+DEVNULL = re.compile(r"(?<!\S)(?:\d?>>?|&>)\s*/dev/null" + _END + r"|(?<!\S)2>&1" + _END)
+SED_PRINT = re.compile(r"^(?:\d+|\$)(?:,(?:\d+|\$))?p$")
 
 
 class Blocked(Exception):
@@ -207,6 +211,8 @@ def _check_apex(args):
     if not args or os.path.realpath(args[0]) != APEX_PY:
         raise Blocked("only the plugin's own apex.py may be executed")
     sub = tuple(a for a in args[1:] if not a.startswith("-"))[:2]
+    if not sub and {"-h", "--help"} & set(args[1:]):
+        return
     if not any(sub[:len(s)] == s for s in AUDITOR_APEX_SUBS):
         raise Blocked(f"apex.py {' '.join(sub) or '(none)'} is reserved for the main thread "
                       "(the auditor may run: status, lint, health, detect, session list/show/check, decision list)")
@@ -255,6 +261,11 @@ def _check_segment(argv: list[str]):
         if prog.endswith("apex.py"):
             return _check_apex([prog] + args)
         raise Blocked(f"running {prog} directly is not allowed")
+    if prog == "sed":
+        # Only `sed -n <range>p [files]` — sed scripts can otherwise write (w) or execute (e).
+        if len(args) >= 2 and args[0] == "-n" and SED_PRINT.match(args[1]) and not any(a.startswith("-") for a in args[2:]):
+            return
+        raise Blocked("only `sed -n <start>,<end>p <file>` is allowed (use Read for files)")
     if prog in SIMPLE_READONLY:
         if prog == "find" and FIND_BAD & set(args):
             raise Blocked("find with -exec/-delete/-fprint is not allowed")

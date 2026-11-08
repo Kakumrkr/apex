@@ -307,7 +307,7 @@ def lint_secrets(p: ApexPaths, r: Report):
     files = [p.roadmap, p.north_star, p.decisions]
     files += glob.glob(os.path.join(p.sessions_dir, "*.md"))
     files += glob.glob(os.path.join(p.research_dir, "**", "*.*"), recursive=True)
-    files += glob.glob(os.path.join(p.root, ".claude", "agent-memory", "*apex-auditor*", "**", "*.md"), recursive=True)
+    files += glob.glob(os.path.join(p.root, ".claude", "agent-memory", "apex*", "**", "*.md"), recursive=True)
     for f in files:
         for kind, line, snip in scan_text(read_text(f)):
             r.error("secret", f"possible {kind} at line {line} ({snip}); remove it — .apex/ is often committed", f)

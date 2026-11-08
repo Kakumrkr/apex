@@ -34,9 +34,15 @@ ALLOW = [
     "CI=1 npx --no-install jest --ci",
     "cd web && git status",
     "echo 'section' ; ls",
+    "ls -la . .apex 2>&1; git log --oneline | head",
+    "ls -d .claude .claude/agent-memory* 2>&1",
+    "git status 2>/dev/null&& git log -1",
+    "sed -n 1,40p README.md | head -5",
+    "sed -n '10,$p' src/app.ts",
     f"python3 {APEX_PY} status --json",
     f"python3 {APEX_PY} health",
     f"python3 {APEX_PY} session list",
+    f"python3 {APEX_PY} --help",
 ]
 
 DENY = [
@@ -88,6 +94,11 @@ DENY = [
     f"python3 {APEX_PY} session set-status S-001 done",
     "ls\nrm -rf /",
     "sort -o out.txt in.txt",
+    "sed -n 'w out.txt' in.txt",
+    "sed -n 1,5p -i file",
+    "sed 's/a/b/' file",
+    "sed -n '1e rm -rf /' file",
+    "ls 2>&1>out.txt",
 ]
 
 
@@ -132,13 +143,15 @@ class WriteGuard(unittest.TestCase):
 
     def test_auditor_allowed_paths(self):
         for path in (".apex/roadmap.md", ".apex/sessions/S-004-add-undo.md", ".apex/research/competitors.md",
-                     os.path.join(self.root, ".claude/agent-memory/apex-auditor/MEMORY.md")):
+                     os.path.join(self.root, ".claude/agent-memory/apex-auditor/MEMORY.md"),
+                     ".claude/agent-memory/apex/MEMORY.md", ".claude/agent-memory/apex/notes/map.md"):
             self.assertEqual(guards.guard_writes(self.ev(path, "apex-auditor"))[0], "allow", path)
 
     def test_auditor_denied_paths(self):
         for path in ("src/app.ts", "package.json", ".apex/config.json", ".apex/sessions/notes.txt",
                      ".apex/research/run.sh", "../outside.md", "/etc/passwd", ".claude/settings.json",
-                     ".apex/sessions/../../src/x.md", ".github/workflows/ci.yml"):
+                     ".apex/sessions/../../src/x.md", ".github/workflows/ci.yml",
+                     ".claude/agent-memory/other-agent/MEMORY.md", ".claude/agent-memory/apex/run.sh"):
             self.assertEqual(guards.guard_writes(self.ev(path, "apex:apex-auditor"))[0], "deny", path)
 
     def test_managed_files_denied_for_everyone(self):

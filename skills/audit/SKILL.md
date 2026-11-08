@@ -38,6 +38,7 @@ REFS=${CLAUDE_PLUGIN_ROOT}/skills/audit/references
 MODE=<mode>   REFRESH_RESEARCH=<true|false>
 LAST_SHA=<last_audit_sha or none>   LAST_AUDIT_DATE=<date or none>
 TIER=<tier or none>   PREVIOUS_SCORE=<score or none>   TODAY=<YYYY-MM-DD>
+MEMORY_FILE=.claude/agent-memory/apex-auditor/MEMORY.md
 Follow your protocol. Use `python3 $APEX_PY …` for CLI calls (expand the path).
 Return the ≤15-line summary when lint passes.
 ```
