@@ -18,6 +18,10 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
         python: ["3.9", "3.13"]
+        exclude:
+          # Ubuntu 26.04 runners ship no Python 3.9 build; macOS keeps 3.9 covered.
+          - os: ubuntu-latest
+            python: "3.9"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
