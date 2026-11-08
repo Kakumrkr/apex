@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+.DS_Store
+# Apex runtime files when dogfooding Apex on this repo
+/.apex/.lock
+/.apex/.search-log.json
+/.apex/.health.json

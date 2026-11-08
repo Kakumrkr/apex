@@ -1,0 +1,20 @@
+{
+  "name": "kakumrkr",
+  "owner": {
+    "name": "Rama Kakumani",
+    "url": "https://github.com/Kakumrkr"
+  },
+  "metadata": {
+    "description": "Claude Code plugins by Rama Kakumani."
+  },
+  "plugins": [
+    {
+      "name": "apex",
+      "source": "./",
+      "description": "Evidence-based project audits, competitor benchmarking, and a persistent session roadmap.",
+      "version": "0.1.0",
+      "category": "productivity",
+      "tags": ["audit", "roadmap", "planning", "strategy"]
+    }
+  ]
+}
