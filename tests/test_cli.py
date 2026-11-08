@@ -108,6 +108,9 @@ class Finalize(ProjectCase):
         rm = self.read(".apex/roadmap.md")
         self.assertIn("xychart-beta", rm)
         self.assertIn("flowchart LR", rm)
+        # GitHub clips HTML labels; the session graph must use native SVG text.
+        self.assertIn('%%{init: {"htmlLabels": false, "flowchart": {"htmlLabels": false', rm)
+        self.assertNotIn("<br/>", rm)
         self.assertEqual(rm.count("<!-- apex:sessions:start -->"), 1)
         # second audit same day -> new snapshot, tier hysteresis applies
         dims = {k: 7.7 for k in DIMS}

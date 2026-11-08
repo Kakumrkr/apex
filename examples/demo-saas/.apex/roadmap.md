@@ -84,16 +84,17 @@ xychart-beta
 | S-010 | Batch planner queries to remove the N+1 on week load | Sonnet · Standard Execution | Depends | S-008 | 1.5h | [S-010-planner-query-batching.md](sessions/S-010-planner-query-batching.md) |
 
 ```mermaid
+%%{init: {"htmlLabels": false, "flowchart": {"htmlLabels": false, "padding": 20}}}%%
 flowchart LR
-    S001["S-001 · Validate task + client inputs with zod at the API boundary"]:::done
-    S002["S-002 · Turn on strict mode and fix the core-loop types"]:::done
-    S003["S-003 · Add tests for the weekly planner's capacity math"]:::done
-    S004["S-004 · Error boundaries + retry on the dashboard and planner"]:::done
-    S005["S-005 · Seed a starter week so new users see value instantly"]:::done
-    S007["S-007 · Cmd+K command palette for clients, tasks, and weeks"]:::in_progress
-    S008["S-008 · Optimistic drag-to-reschedule with instant undo"]:::todo
-    S009["S-009 · GitHub Actions CI running typecheck, lint, and tests"]:::todo
-    S010["S-010 · Batch planner queries to remove the N+1 on week load"]:::todo
+    S001["S-001\nValidate task + client inputs with zod at the API boundary"]:::done
+    S002["S-002\nTurn on strict mode and fix the core-loop types"]:::done
+    S003["S-003\nAdd tests for the weekly planner's capacity math"]:::done
+    S004["S-004\nError boundaries + retry on the dashboard and planner"]:::done
+    S005["S-005\nSeed a starter week so new users see value instantly"]:::done
+    S007["S-007\nCmd+K command palette for clients, tasks, and weeks"]:::in_progress
+    S008["S-008\nOptimistic drag-to-reschedule with instant undo"]:::todo
+    S009["S-009\nGitHub Actions CI running typecheck, lint, and tests"]:::todo
+    S010["S-010\nBatch planner queries to remove the N+1 on week load"]:::todo
     S008 --> S010
     classDef done fill:#d1fae5,stroke:#059669,color:#064e3b
     classDef in_progress fill:#dbeafe,stroke:#2563eb,color:#1e3a8a

@@ -4,19 +4,20 @@ Apex splits the work three ways: **judgment** (the LLM), **bookkeeping** (a
 deterministic Python CLI), and **enforcement** (Claude Code hooks).
 
 ```mermaid
+%%{init: {"htmlLabels": false, "flowchart": {"htmlLabels": false, "padding": 20}}}%%
 flowchart TB
     subgraph main["Main conversation (can ask you questions)"]
-        init["/apex:init<br/>interview → North Star"]
-        auditSkill["/apex:audit<br/>orchestrate + triage"]
-        run["/apex:run-session<br/>implement → verify → commit"]
-        status["/apex:status · /apex:defer · /apex:doctor"]
+        init["/apex:init\ninterview → North Star"]
+        auditSkill["/apex:audit\norchestrate + triage"]
+        run["/apex:run-session\nimplement → verify → commit"]
+        status["/apex:status, /apex:defer, /apex:doctor"]
     end
     subgraph sub["apex-auditor subagent (autonomous, read-only)"]
-        proto["orient → progress → health → code audit<br/>→ research → opportunities → packets → roadmap → lint"]
+        proto["orient → progress → health → code audit\n→ research → opportunities → packets → roadmap → lint"]
     end
-    cli[("apex.py (stdlib Python)<br/>state · decisions · sessions · lint · health · finalize")]
-    hooks{{"hooks.json<br/>guard-writes · guard-bash · guard-reads<br/>search-log · subagent-stop · session-start"}}
-    state[(".apex/<br/>north-star · decisions · roadmap<br/>sessions/ · research/ · history/ · state")]
+    cli[("apex.py (stdlib Python)\nstate, decisions, sessions, lint, health, finalize")]
+    hooks{{"hooks.json\nguard-writes, guard-bash, guard-reads\nsearch-log, subagent-stop, session-start"}}
+    state[(".apex/\nnorth-star, decisions, roadmap\nsessions/, research/, history/, state")]
 
     init --> cli
     auditSkill -- "Agent tool" --> sub

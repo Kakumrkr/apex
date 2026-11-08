@@ -54,11 +54,12 @@ Or in two steps:
 ## The workflow
 
 ```mermaid
+%%{init: {"htmlLabels": false, "flowchart": {"htmlLabels": false, "padding": 20}}}%%
 flowchart LR
-    A["/apex:init<br/>lock your North Star"] --> B["/apex:audit<br/>score · benchmark · plan"]
-    B --> C{"triage<br/>keep / defer / won't fix"}
-    C --> D["/apex:run-session S-001<br/>implement · verify · commit"]
-    D --> E["/apex:run-session S-002 …"]
+    A["/apex:init\nlock your North Star"] --> B["/apex:audit\nscore, benchmark, plan"]
+    B --> C{"triage\nkeep, defer, won't fix"}
+    C --> D["/apex:run-session S-001\nimplement, verify, commit"]
+    D --> E["/apex:run-session S-002\nand so on"]
     E -->|"days or weeks later"| B
 ```
 
@@ -120,16 +121,17 @@ xychart-beta
 ```
 
 ```mermaid
+%%{init: {"htmlLabels": false, "flowchart": {"htmlLabels": false, "padding": 20}}}%%
 flowchart LR
-    S001["S-001 · Validate inputs with zod"]:::done
-    S002["S-002 · Strict TypeScript"]:::done
-    S003["S-003 · Planner tests"]:::done
-    S004["S-004 · Error boundaries + retry"]:::done
-    S005["S-005 · Starter week template"]:::done
-    S007["S-007 · Cmd+K palette"]:::in_progress
-    S008["S-008 · Optimistic reschedule + undo"]:::todo
-    S009["S-009 · CI workflow"]:::todo
-    S010["S-010 · Batch planner queries"]:::todo
+    S001["S-001\nValidate task + client inputs with zod at the API boundary"]:::done
+    S002["S-002\nTurn on strict mode and fix the core-loop types"]:::done
+    S003["S-003\nAdd tests for the weekly planner's capacity math"]:::done
+    S004["S-004\nError boundaries + retry on the dashboard and planner"]:::done
+    S005["S-005\nSeed a starter week so new users see value instantly"]:::done
+    S007["S-007\nCmd+K command palette for clients, tasks, and weeks"]:::in_progress
+    S008["S-008\nOptimistic drag-to-reschedule with instant undo"]:::todo
+    S009["S-009\nGitHub Actions CI running typecheck, lint, and tests"]:::todo
+    S010["S-010\nBatch planner queries to remove the N+1 on week load"]:::todo
     S008 --> S010
     classDef done fill:#d1fae5,stroke:#059669,color:#064e3b
     classDef in_progress fill:#dbeafe,stroke:#2563eb,color:#1e3a8a

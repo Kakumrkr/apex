@@ -147,8 +147,12 @@ def banner(p: ApexPaths) -> str | None:
     return " · ".join(parts) + " · /apex:status"
 
 
+MERMAID_FLOW_INIT = ('%%{init: {"htmlLabels": false, '
+                     '"flowchart": {"htmlLabels": false, "padding": 20}}}%%')
+
+
 def _mq(s: str) -> str:
-    return str(s).replace('"', "#quot;")
+    return " ".join(str(s).split()).replace('"', "#quot;").replace("\\", "/")
 
 
 def trend_region(history: list[dict]) -> str:
@@ -176,10 +180,11 @@ def sessions_region(p: ApexPaths) -> str:
         model = "Opus · Deep Architecture" if s.get("model") == "opus" else "Sonnet · Standard Execution"
         link = f"[{os.path.basename(s['_path'])}](sessions/{os.path.basename(s['_path'])})"
         rows.append(f"| {s.get('id')} | {s.get('title')} | {model} | {tag} | {deps} | {s.get('estimate_hours')}h | {link} |")
-    graph = ["```mermaid", "flowchart LR"]
+    # Native SVG labels: GitHub clips HTML (foreignObject) labels on the right edge.
+    graph = ["```mermaid", MERMAID_FLOW_INIT, "flowchart LR"]
     for s in pkts:
         nid = str(s.get("id")).replace("-", "")
-        graph.append(f'    {nid}["{_mq(s.get("id"))} · {_mq(s.get("title"))}"]:::{s.get("status")}')
+        graph.append(f'    {nid}["{_mq(s.get("id"))}\\n{_mq(s.get("title"))}"]:::{s.get("status")}')
     for s in pkts:
         for d in s.get("depends_on") or []:
             graph.append(f"    {str(d).replace('-', '')} --> {str(s.get('id')).replace('-', '')}")
