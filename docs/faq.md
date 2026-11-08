@@ -28,7 +28,12 @@ Yes, if they're tagged `Parallel-Safe`. The linter guarantees they share no targ
 
 **Does it work on Windows?**
 The CLI is portable Python, but hooks call `python3`. Make sure `python3` is on `PATH` (e.g. via the
-Python launcher alias) or run Claude Code in WSL.
+Python launcher alias) or run Claude Code in WSL. `/apex:doctor` tells you whether the hooks can run.
+
+**Something seems off. Where do I start?**
+Run `/apex:doctor`. It checks Python and git, the plugin's hook wiring, settings that disable hooks
+(`disableAllHooks`, `allowManagedHooksOnly`), and `.apex/` integrity, and it runs each guardrail
+with a real event to prove it blocks what it should.
 
 **Can I change the rubric weights?**
 Not in v0.1. Weights live in `scripts/apex_core/state.py` and the rubric reference. Configurable rubrics

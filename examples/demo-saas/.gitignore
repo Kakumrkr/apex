@@ -1,0 +1,4 @@
+# Apex runtime files
+.apex/.lock
+.apex/.search-log.json
+.apex/.health.json

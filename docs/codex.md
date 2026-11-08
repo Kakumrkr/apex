@@ -12,7 +12,9 @@ cd your-project
 # or: ~/apex/scripts/install-codex.sh ~/.agents   (global)
 ```
 
-Then in Codex: `$apex-init`, `$apex-audit`, `$apex-run-session S-001`, `$apex-status`, `$apex-defer`.
+Then in Codex: `$apex-init`, `$apex-audit`, `$apex-run-session S-001`, `$apex-status`, `$apex-defer`, `$apex-doctor`.
+
+`$apex-doctor` detects the prompt-only install and reports that guardrails are advisory there.
 
 | Feature | Claude Code | Codex |
 |---|---|---|

@@ -1,9 +1,9 @@
-# Apex Roadmap — Tasklane (fictional demo)
+# Apex Roadmap: Tasklane (fictional demo)
 
 <!-- apex:scorecard {"date": "2026-11-07", "mode": "standard", "sha": "c47e9f2", "overall": 6.8, "confidence": "medium", "research": "full", "health": {"status": "pass"}, "dimensions": {"core_loop": 8.0, "data_integrity": 7.0, "ux_onboarding": 6.5, "code_health": 7.5, "resilience": 6.0, "performance": 6.5, "testing": 6.0, "security": 6.0}, "delta_justification": "+1.7: S-004 and S-005 shipped (error boundaries, starter week cut onboarding from 6 to 2 steps), CI-ready test suite grew from 19 to 47 tests, and data layer gained transactions in src/lib/planner-data.ts:61."} -->
 
 > **North Star:** freelancers plan a realistic multi-client week in <60s · see `north-star.md`
-> **Score 6.8 / 10 · Tier 2 · Reliability** — reliable and pleasant for early adopters; now win on speed and keyboard flow where both competitors are weak.
+> **Score 6.8 / 10 · Tier 2 · Reliability.** Reliable and pleasant for early adopters; now win on speed and keyboard flow where both competitors are weak.
 
 ## Scorecard
 | Dimension | Weight | Score | Confidence | Evidence |
@@ -53,7 +53,7 @@ xychart-beta
 | Starter templates | Boardly (fictional) | Matches | Both seed a sample workspace | https://boardly.example.com/templates | verified | 2026-11-07 |
 | Keyboard navigation | Boardly (fictional) | Missing | Neither of us has a palette; their users ask for it | https://reviews.example.com/boardly/cons | verified | 2026-11-07 |
 | Free tier limits | Acme Tasks (fictional) | Matches | Similar 3-project cap | https://acmetasks.example.com/pricing | verified | 2026-11-07 |
-| Offline drag & drop | Boardly (fictional) | Missing | Not verified this run | — | unverified | 2026-11-07 |
+| Offline drag & drop | Boardly (fictional) | Missing | Not verified this run | - | unverified | 2026-11-07 |
 
 ### Competitor weaknesses we can exploit
 - **Acme Tasks:** drag-and-drop is described as "laggy" (forum thread) → optimistic moves + instant undo (S-008).
@@ -62,10 +62,10 @@ xychart-beta
 ## Opportunities
 | Slug | Opportunity | Impact | Effort (sessions) | ROI | Tier | Checked |
 |---|---|---:|---:|---:|---:|---|
-| `cmd-k-palette` | Cmd+K command palette | 4 | 1 | 4.0 | 3 | — |
-| `ci-pipeline` | CI for health checks | 3 | 0.5 | 6.0 | 2 | — |
-| `optimistic-reschedule` | Optimistic reschedule + undo | 5 | 1.5 | 3.3 | 2 | — |
-| `planner-n-plus-one` | Batch planner queries | 3 | 1 | 3.0 | 2 | — |
+| `cmd-k-palette` | Cmd+K command palette | 4 | 1 | 4.0 | 3 | - |
+| `ci-pipeline` | CI for health checks | 3 | 0.5 | 6.0 | 2 | - |
+| `optimistic-reschedule` | Optimistic reschedule + undo | 5 | 1.5 | 3.3 | 2 | - |
+| `planner-n-plus-one` | Batch planner queries | 3 | 1 | 3.0 | 2 | - |
 
 **Filtered out (anti-bloat):** team workspaces, Zapier integration · **Decisions honored:** WF-001 (SSO), DF-001 (calendar sync, revisit 2027-01-15)
 
@@ -73,14 +73,14 @@ xychart-beta
 <!-- apex:sessions:start -->
 | ID | Session | Model | Parallel | Depends on | Est. | Packet |
 |----|---------|-------|----------|------------|------|--------|
-| S-001 | Validate task + client inputs with zod at the API boundary | Sonnet · Standard Execution | Parallel-Safe | — | 1.5h | [S-001-validate-task-inputs.md](sessions/S-001-validate-task-inputs.md) |
-| S-002 | Turn on strict mode and fix the core-loop types | Opus · Deep Architecture | Parallel-Safe | — | 2h | [S-002-strict-typescript.md](sessions/S-002-strict-typescript.md) |
-| S-003 | Add tests for the weekly planner's capacity math | Sonnet · Standard Execution | Parallel-Safe | — | 1h | [S-003-planner-core-tests.md](sessions/S-003-planner-core-tests.md) |
-| S-004 | Error boundaries + retry on the dashboard and planner | Sonnet · Standard Execution | Parallel-Safe | — | 1.5h | [S-004-dashboard-error-boundaries.md](sessions/S-004-dashboard-error-boundaries.md) |
-| S-005 | Seed a starter week so new users see value instantly | Sonnet · Standard Execution | Parallel-Safe | — | 1.5h | [S-005-starter-week-template.md](sessions/S-005-starter-week-template.md) |
-| S-007 | Cmd+K command palette for clients, tasks, and weeks | Sonnet · Standard Execution | Parallel-Safe | — | 1.5h | [S-007-cmd-k-palette.md](sessions/S-007-cmd-k-palette.md) |
-| S-008 | Optimistic drag-to-reschedule with instant undo | Opus · Deep Architecture | Parallel-Safe | — | 2h | [S-008-optimistic-task-moves.md](sessions/S-008-optimistic-task-moves.md) |
-| S-009 | GitHub Actions CI running typecheck, lint, and tests | Sonnet · Standard Execution | Parallel-Safe | — | 0.75h | [S-009-ci-health-workflow.md](sessions/S-009-ci-health-workflow.md) |
+| S-001 | Validate task + client inputs with zod at the API boundary | Sonnet · Standard Execution | Parallel-Safe | - | 1.5h | [S-001-validate-task-inputs.md](sessions/S-001-validate-task-inputs.md) |
+| S-002 | Turn on strict mode and fix the core-loop types | Opus · Deep Architecture | Parallel-Safe | - | 2h | [S-002-strict-typescript.md](sessions/S-002-strict-typescript.md) |
+| S-003 | Add tests for the weekly planner's capacity math | Sonnet · Standard Execution | Parallel-Safe | - | 1h | [S-003-planner-core-tests.md](sessions/S-003-planner-core-tests.md) |
+| S-004 | Error boundaries + retry on the dashboard and planner | Sonnet · Standard Execution | Parallel-Safe | - | 1.5h | [S-004-dashboard-error-boundaries.md](sessions/S-004-dashboard-error-boundaries.md) |
+| S-005 | Seed a starter week so new users see value instantly | Sonnet · Standard Execution | Parallel-Safe | - | 1.5h | [S-005-starter-week-template.md](sessions/S-005-starter-week-template.md) |
+| S-007 | Cmd+K command palette for clients, tasks, and weeks | Sonnet · Standard Execution | Parallel-Safe | - | 1.5h | [S-007-cmd-k-palette.md](sessions/S-007-cmd-k-palette.md) |
+| S-008 | Optimistic drag-to-reschedule with instant undo | Opus · Deep Architecture | Parallel-Safe | - | 2h | [S-008-optimistic-task-moves.md](sessions/S-008-optimistic-task-moves.md) |
+| S-009 | GitHub Actions CI running typecheck, lint, and tests | Sonnet · Standard Execution | Parallel-Safe | - | 0.75h | [S-009-ci-health-workflow.md](sessions/S-009-ci-health-workflow.md) |
 | S-010 | Batch planner queries to remove the N+1 on week load | Sonnet · Standard Execution | Depends | S-008 | 1.5h | [S-010-planner-query-batching.md](sessions/S-010-planner-query-batching.md) |
 
 ```mermaid

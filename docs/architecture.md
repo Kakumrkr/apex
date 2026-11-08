@@ -9,7 +9,7 @@ flowchart TB
         init["/apex:init<br/>interview → North Star"]
         auditSkill["/apex:audit<br/>orchestrate + triage"]
         run["/apex:run-session<br/>implement → verify → commit"]
-        status["/apex:status · /apex:defer"]
+        status["/apex:status · /apex:defer · /apex:doctor"]
     end
     subgraph sub["apex-auditor subagent (autonomous, read-only)"]
         proto["orient → progress → health → code audit<br/>→ research → opportunities → packets → roadmap → lint"]
@@ -57,7 +57,7 @@ flowchart TB
 When `state.json.last_audit_sha` exists and the mode isn't `full`, the auditor:
 - spends ~80% of its file reads on `git diff <last_sha>..HEAD`
 - reuses its codebase map from its project memory (`.claude/agent-memory/apex*/MEMORY.md`)
-- spot-checks 2–3 untouched modules
+- spot-checks 2-3 untouched modules
 
 `quick` mode also skips web research and runs the auditor on Sonnet.
 

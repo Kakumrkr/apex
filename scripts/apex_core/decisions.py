@@ -7,7 +7,7 @@ import re
 from . import md
 from .paths import ApexPaths, read_text, write_text
 
-HEADER = """# Apex Decisions Log — Won't Fix & Deferred
+HEADER = """# Apex Decisions Log: Won't Fix & Deferred
 
 > Managed by `apex.py decision add` (or `/apex:defer`). Append-only: Claude's
 > Write/Edit tools are blocked on this file by the Apex hooks.
@@ -44,7 +44,7 @@ def load(p: ApexPaths) -> list[dict]:
                 "title": md.col(r, "title").strip(),
                 "reason": md.col(r, "reason").strip(),
                 "date": md.col(r, "date").strip(),
-                "revisit": md.col(r, "revisit").strip().strip("—-").strip() or None,
+                "revisit": md.col(r, "revisit").strip().strip("\u2014-").strip() or None,
             })
     return rows
 
@@ -80,7 +80,7 @@ def add(p: ApexPaths, kind: str, title: str, reason: str, slug: str | None = Non
     nums = [int(e["id"].split("-")[1]) for e in existing if e["id"].startswith(prefix)]
     did = f"{prefix}-{(max(nums) + 1) if nums else 1:03d}"
     today = today or _dt.date.today().isoformat()
-    row = f"| {did} | {kind} | `{slug}` | {_cell(title)} | {_cell(reason)} | {today} | {revisit or '—'} |\n"
+    row = f"| {did} | {kind} | `{slug}` | {_cell(title)} | {_cell(reason)} | {today} | {revisit or '-'} |\n"
     text = read_text(p.decisions)
     if not text.endswith("\n"):
         text += "\n"

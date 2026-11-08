@@ -40,7 +40,7 @@ def lock_release(p: ApexPaths) -> bool:
 def finalize(p: ApexPaths, today: str | None = None) -> dict:
     report = lint.run(p, require_roadmap=True)
     if report.errors:
-        raise RuntimeError("lint failed — the audit cannot be finalized:\n" + report.text())
+        raise RuntimeError("lint failed, so the audit cannot be finalized:\n" + report.text())
     text = read_text(p.roadmap)
     card, _ = md.json_block(text, "scorecard")
     state, cfg = load_state(p), load_config(p)

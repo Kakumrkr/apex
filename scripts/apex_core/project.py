@@ -1,4 +1,4 @@
-"""`apex.py init` — create the `.apex/` workspace and lock the North Star."""
+"""`apex.py init`: create the `.apex/` workspace and lock the North Star."""
 from __future__ import annotations
 
 import datetime as _dt

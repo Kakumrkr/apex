@@ -85,7 +85,7 @@ def status_text(p: ApexPaths) -> str:
         return "Apex is not initialized here. Run /apex:init (Claude Code) to lock your Product North Star."
     out = [f"APEX · {s['project']}", ""]
     if s["score"] is None:
-        out.append("Score   — (no audit yet: run /apex:audit)")
+        out.append("Score   none yet (run /apex:audit)")
     else:
         hist = [h["score"] for h in s["history"] if isinstance(h.get("score"), (int, float))]
         delta = ""
@@ -97,7 +97,7 @@ def status_text(p: ApexPaths) -> str:
         if hist:
             out.append(f"Trend   {sparkline(hist)}  ({len(hist)} audit{'s' if len(hist) != 1 else ''})")
         age = s["days_since_audit"]
-        stale = "  ⚠ stale — consider /apex:audit" if age is not None and age > s["stale_audit_days"] else ""
+        stale = "  ⚠ stale, consider /apex:audit" if age is not None and age > s["stale_audit_days"] else ""
         out.append(f"Audit   {s['last_audit_date']} ({age}d ago) · {s['last_mode']} · {str(s['last_audit_sha'] or '')[:7]}{stale}")
     h = s["health"]
     if h["status"]:
@@ -115,7 +115,7 @@ def status_text(p: ApexPaths) -> str:
     for x in s["in_progress"]:
         out.append(f"  ▶ in progress: {x['id']} {x['title']}")
     for x in s["blocked"]:
-        out.append(f"  ■ blocked: {x['id']} {x['title']}" + (f" — {x['notes']}" if x.get("notes") else ""))
+        out.append(f"  ■ blocked: {x['id']} {x['title']}" + (f" ({x['notes']})" if x.get("notes") else ""))
     if s["ready"]:
         out.append("  Ready now:")
         for x in s["ready"]:
@@ -135,11 +135,11 @@ def banner(p: ApexPaths) -> str | None:
         return None
     s = summary(p)
     if s["score"] is None:
-        return "Apex: initialized but not audited yet — run /apex:audit."
+        return "Apex: initialized but not audited yet. Run /apex:audit."
     parts = [f"Apex {s['score']:.1f}/10 (Tier {s['tier']})"]
     age = s["days_since_audit"]
     if age is not None:
-        parts.append(f"last audit {age}d ago" + (" — consider /apex:audit" if age > s["stale_audit_days"] else ""))
+        parts.append(f"last audit {age}d ago" + (", consider /apex:audit" if age > s["stale_audit_days"] else ""))
     if s["in_progress"]:
         parts.append(f"in progress: {s['in_progress'][0]['id']}")
     elif s["ready"]:
@@ -172,7 +172,7 @@ def sessions_region(p: ApexPaths) -> str:
             "|----|---------|-------|----------|------------|------|--------|"]
     for s in pkts:
         tag = "Parallel-Safe" if s.get("parallel") == "safe" else "Depends"
-        deps = ", ".join(s.get("depends_on") or []) or "—"
+        deps = ", ".join(s.get("depends_on") or []) or "-"
         model = "Opus · Deep Architecture" if s.get("model") == "opus" else "Sonnet · Standard Execution"
         link = f"[{os.path.basename(s['_path'])}](sessions/{os.path.basename(s['_path'])})"
         rows.append(f"| {s.get('id')} | {s.get('title')} | {model} | {tag} | {deps} | {s.get('estimate_hours')}h | {link} |")
@@ -189,5 +189,5 @@ def sessions_region(p: ApexPaths) -> str:
               "    classDef todo fill:#f3f4f6,stroke:#6b7280,color:#111827", "```"]
     note = "_Statuses live in each packet's frontmatter; run `/apex:status` for live progress._"
     if hidden:
-        note = f"_{len(hidden)} older completed session(s) omitted — see `.apex/sessions/`._ " + note
+        note = f"_{len(hidden)} older completed session(s) omitted; see `.apex/sessions/`._ " + note
     return "\n".join(rows) + "\n\n" + "\n".join(graph) + "\n\n" + note

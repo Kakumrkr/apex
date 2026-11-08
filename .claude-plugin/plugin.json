@@ -1,8 +1,8 @@
 {
   "name": "apex",
-  "displayName": "Apex — Project Optimizer & Strategist",
+  "displayName": "Apex: Project Optimizer & Strategist",
   "version": "0.1.0",
-  "description": "A staff-engineer agent for your repo: evidence-based 1-10 audits, competitor benchmarking, and a persistent roadmap of 1-2 hour session packets — without touching your source code.",
+  "description": "A staff-engineer agent for your repo: evidence-based 1-10 audits, competitor benchmarking, and a persistent roadmap of 1-2 hour session packets. It never touches your source code.",
   "author": {
     "name": "Rama Kakumani",
     "url": "https://github.com/Kakumrkr"

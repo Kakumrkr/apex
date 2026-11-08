@@ -26,14 +26,14 @@ def roadmap(card=None, parity_rows=None, opp_rows=None, extra=""):
     card = card or SCORECARD
     parity_rows = parity_rows if parity_rows is not None else [
         "| Quick capture | Acme Tasks | Matches | Both support inbox capture | https://acme.example.com/features | verified | 2026-11-01 |",
-        "| Offline mode | Boardly | Missing | Boardly works offline | — | unverified | 2026-11-01 |",
+        "| Offline mode | Boardly | Missing | Boardly works offline | - | unverified | 2026-11-01 |",
     ]
     opp_rows = opp_rows if opp_rows is not None else [
-        "| `error-boundaries` | Error boundaries on dashboard | 4 | 1 | 4.0 | 2 | — |",
-        "| `cmd-k-palette` | Cmd+K command palette | 4 | 1 | 4.0 | 3 | — |",
+        "| `error-boundaries` | Error boundaries on dashboard | 4 | 1 | 4.0 | 2 | - |",
+        "| `cmd-k-palette` | Cmd+K command palette | 4 | 1 | 4.0 | 3 | - |",
     ]
     return textwrap.dedent("""\
-        # Apex Roadmap — Demo
+        # Apex Roadmap: Demo
 
         <!-- apex:scorecard {card} -->
 
@@ -138,7 +138,7 @@ class ProjectCase(unittest.TestCase):
             # Decisions
             | ID | Type | Slug | Title | Reason | Date | Revisit |
             |----|------|------|-------|--------|------|---------|
-            | WF-001 | wont-fix | `sso-login` | SSO | Not our audience | 2026-10-01 | — |
+            | WF-001 | wont-fix | `sso-login` | SSO | Not our audience | 2026-10-01 | - |
             | DF-001 | deferred | `offline-mode` | Offline | Later | 2026-10-01 | 2026-10-15 |
             """))
         self.write(".apex/config.json", json.dumps({"schema_version": 1, "health_checks": []}))

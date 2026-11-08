@@ -1,4 +1,4 @@
-"""`apex.py lint` — validates everything the auditor writes.
+"""`apex.py lint`: validates everything the auditor writes.
 
 Errors block the auditor's SubagentStop (it must fix them); warnings don't.
 """
@@ -48,7 +48,7 @@ class Report:
 
     def text(self) -> str:
         if not self.items:
-            return "apex lint: OK — no issues"
+            return "apex lint: OK, no issues"
         lines = []
         for i in self.errors + self.warnings:
             where = f" [{i['file']}]" if i["file"] else ""
@@ -112,7 +112,7 @@ def lint_scorecard(p: ApexPaths, r: Report, text: str, state: dict, audit_ctx: b
         head = gitutil.head_sha(p.root)
         if not head or hj.get("sha") == head:
             if hj["status"] != health:
-                r.error("health-mismatch", f"scorecard says health '{health}' but .apex/.health.json recorded '{hj['status']}' — "
+                r.error("health-mismatch", f"scorecard says health '{health}' but .apex/.health.json recorded '{hj['status']}'; "
                         "report what the checks actually returned", p.roadmap)
         elif audit_ctx:
             r.warn("health-stale", ".apex/.health.json is from another commit; re-run `apex.py health`", p.health)
@@ -247,7 +247,7 @@ def lint_sessions(p: ApexPaths, r: Report, opp_slugs: set[str]):
             r.error("packet", "parallel: depends requires depends_on", path)
         n = len(s.get("targets") or [])
         if not 1 <= n <= sessions.MAX_TARGETS:
-            r.error("packet", f"targets must list 1-{sessions.MAX_TARGETS} files (got {n}) — split the session", path)
+            r.error("packet", f"targets must list 1-{sessions.MAX_TARGETS} files (got {n}); split the session", path)
         if not s.get("dod"):
             r.error("packet", "dod must list at least one verification command", path)
         est = s.get("estimate_hours")
@@ -310,16 +310,16 @@ def lint_secrets(p: ApexPaths, r: Report):
     files += glob.glob(os.path.join(p.root, ".claude", "agent-memory", "apex*", "**", "*.md"), recursive=True)
     for f in files:
         for kind, line, snip in scan_text(read_text(f)):
-            r.error("secret", f"possible {kind} at line {line} ({snip}); remove it — .apex/ is often committed", f)
+            r.error("secret", f"possible {kind} at line {line} ({snip}); remove it, because .apex/ is often committed", f)
 
 
 def run(p: ApexPaths, require_roadmap: bool = False) -> Report:
     r = Report(p.root)
     if not p.exists():
-        r.error("init", "no .apex/ directory — run /apex:init first")
+        r.error("init", "no .apex/ directory; run /apex:init first")
         return r
     if not os.path.exists(p.north_star):
-        r.error("init", "missing .apex/north-star.md — run /apex:init")
+        r.error("init", "missing .apex/north-star.md; run /apex:init")
     for path in (p.config, p.state):
         if os.path.exists(path):
             try:
@@ -338,7 +338,7 @@ def run(p: ApexPaths, require_roadmap: bool = False) -> Report:
     text = read_text(p.roadmap)
     opp_slugs: set[str] = set()
     if not text.strip():
-        (r.error if require_roadmap else r.warn)("roadmap", "no .apex/roadmap.md yet — run /apex:audit", p.roadmap)
+        (r.error if require_roadmap else r.warn)("roadmap", "no .apex/roadmap.md yet; run /apex:audit", p.roadmap)
     else:
         size = len(text.encode("utf-8"))
         if size > ROADMAP_MAX_BYTES:

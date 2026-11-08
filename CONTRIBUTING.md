@@ -16,7 +16,9 @@ claude --plugin-dir .                             # try the plugin locally
 - **Security changes need tests.** New allowlisted Bash commands go in `tests/test_guards.py` (ALLOW *and* DENY cases).
 - **Determinism belongs in `apex.py`, judgment in prompts.** If the model keeps getting something mechanical wrong, move it into the CLI or the linter.
 - Keep skill and agent prompts tight. Every always-on token is paid in every session (`claude plugin details apex`).
-- Run `python3 scripts/apex.py lint --project-dir examples/demo-saas` before opening a PR.
+- Run `python3 scripts/apex.py lint --project-dir examples/demo-saas` and `python3 scripts/apex.py doctor` before opening a PR.
+- If you change `render.py`, `lint.py`, or the CLI's output, regenerate the demo with `python3 examples/generate_demo.py` and update the README snippets from its real output.
+- Write docs in plain punctuation: hyphens, colons, and periods, not em dashes.
 
 ## Good first issues
 - Health-check detection for Go (`go vet`, `go test`) or Rust (`cargo check`, `cargo test`)

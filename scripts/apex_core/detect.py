@@ -134,5 +134,5 @@ def detect(root: str) -> dict:
         result["notes"].append("No package.json or Python project files found; add health checks to .apex/config.json manually.")
     for other in ("go.mod", "Cargo.toml", "Gemfile", "pom.xml", "build.gradle", "composer.json"):
         if os.path.exists(os.path.join(root, other)):
-            result["notes"].append(f"Found {other}: this stack isn't auto-detected yet — add its checks to config.json by hand.")
+            result["notes"].append(f"Found {other}: this stack isn't auto-detected yet; add its checks to config.json by hand.")
     return result

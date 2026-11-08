@@ -62,12 +62,12 @@ class Provenance(ProjectCase):
         self.assertIn("provenance", codes(lint.run(self.p)))
 
     def test_unverified_needs_no_url(self):
-        rows = ["| Sync | Acme | Beats | from memory | — | unverified | 2026-11-01 |"]
+        rows = ["| Sync | Acme | Beats | from memory | - | unverified | 2026-11-01 |"]
         self.write(".apex/roadmap.md", roadmap(parity_rows=rows))
         self.assertNotIn("provenance", codes(lint.run(self.p)))
 
     def test_verified_without_url_fails(self):
-        rows = ["| Sync | Acme | Beats | x | — | verified | 2026-11-01 |"]
+        rows = ["| Sync | Acme | Beats | x | - | verified | 2026-11-01 |"]
         self.write(".apex/roadmap.md", roadmap(parity_rows=rows))
         self.assertIn("provenance", codes(lint.run(self.p)))
 
@@ -77,7 +77,7 @@ class Provenance(ProjectCase):
         self.assertNotIn("provenance", codes(lint.run(self.p)))
 
     def test_bad_verdict(self):
-        rows = ["| Q | Acme | Better | x | — | unverified | d |"]
+        rows = ["| Q | Acme | Better | x | - | unverified | d |"]
         self.write(".apex/roadmap.md", roadmap(parity_rows=rows))
         self.assertIn("parity", codes(lint.run(self.p)))
 
@@ -98,17 +98,17 @@ class CommittedResearch(ProjectCase):
 
 class Decisions(ProjectCase):
     def test_wont_fix_slug_collision(self):
-        opp = ["| `sso-login` | SSO | 3 | 2 | 1.5 | 3 | — |"]
+        opp = ["| `sso-login` | SSO | 3 | 2 | 1.5 | 3 | - |"]
         self.write(".apex/roadmap.md", roadmap(opp_rows=opp))
         self.assertIn("wont-fix", codes(lint.run(self.p)))
 
     def test_similar_title_different_slug_is_fine(self):
-        opp = ["| `login-rate-limiting` | Login rate limiting (not SSO) | 3 | 1 | 3 | 2 | — |"]
+        opp = ["| `login-rate-limiting` | Login rate limiting (not SSO) | 3 | 1 | 3 | 2 | - |"]
         self.write(".apex/roadmap.md", roadmap(opp_rows=opp))
         self.assertEqual(codes(lint.run(self.p)) & {"wont-fix", "deferred"}, set())
 
     def test_deferred_requires_ack(self):
-        opp = ["| `offline-mode` | Offline | 4 | 2 | 2 | 3 | — |"]
+        opp = ["| `offline-mode` | Offline | 4 | 2 | 2 | 3 | - |"]
         self.write(".apex/roadmap.md", roadmap(opp_rows=opp))
         self.assertIn("deferred", codes(lint.run(self.p)))
         opp = ["| `offline-mode` | Offline | 4 | 2 | 2 | 3 | DF-001 |"]

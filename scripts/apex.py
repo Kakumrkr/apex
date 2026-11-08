@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Apex CLI — deterministic bookkeeping for the Apex Claude Code plugin.
+"""Apex CLI: deterministic bookkeeping for the Apex Claude Code plugin.
 
 Stdlib only, Python 3.9+. Run `python3 apex.py --help`.
 """
