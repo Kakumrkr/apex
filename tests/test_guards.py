@@ -14,7 +14,10 @@ ALLOW = [
     "git config --get remote.origin.url",
     "cat src/app.ts",
     "head -n 50 src/app.ts | grep -n useEffect",
-    "grep -rn 'TODO' src 2>/dev/null",
+    "grep -n 'TODO' src/app.ts 2>/dev/null",
+    "rg -n TODO src",
+    "ls -la . .apex .apex/* 2>&1 | head -60",
+    "wc -l src/* config/*",
     "rg -n \"export default\" src --glob '*.tsx'",
     "find src -name '*.ts' -type f",
     "ls -la && wc -l src/*.ts",
@@ -99,6 +102,36 @@ DENY = [
     "sed 's/a/b/' file",
     "sed -n '1e rm -rf /' file",
     "ls 2>&1>out.txt",
+    "cat < .env.local",
+    "cat .e*",
+    "cat config/*.pem",
+    "cat config/.env*",
+    "head -5 */id_*",
+    "cat {.env,README.md}",
+    "git show HEAD:.env",
+    "grep -rn API_KEY .",
+    "grep -R secret config",
+    "rg --hidden KEY",
+    "rg -uu KEY",
+    "echo \"$HOME\"",
+    "echo ${PATH}",
+    "cat 'unterminated",
+    "ls 1>&2 2>&1 > out",
+]
+
+# Operators inside quotes are data, not shell syntax. A naive splitter breaks these.
+QUOTED_OPERATORS = [
+    'grep -E "foo|bar" src/app.ts',
+    "rg \"error|warn\"",
+    "rg -n 'a;b' --glob '*.tsx' src",
+    'grep ";" src/app.ts',
+    'grep "|" src/app.ts',
+    "grep -n '&&' src/app.ts | head -5",
+    'grep -n "a > b" src/app.ts',
+    "grep -c '$(' src/app.ts",
+    'grep "say \\"hi|bye\\"" src/app.ts',
+    "grep -E 'TODO|FIXME' src/app.ts; git status",
+    r"grep -n foo\|bar src/app.ts",
 ]
 
 
@@ -114,6 +147,32 @@ class BashGuard(unittest.TestCase):
             with self.subTest(cmd=cmd):
                 ok, reason = guards.check_command(cmd)
                 self.assertFalse(ok, f"should deny: {cmd!r}")
+
+    def test_operators_inside_quotes(self):
+        for cmd in QUOTED_OPERATORS:
+            with self.subTest(cmd=cmd):
+                ok, reason = guards.check_command(cmd)
+                self.assertTrue(ok, f"should allow: {cmd!r} ({reason})")
+
+    def test_tokenizer_segments(self):
+        self.assertEqual(guards.tokenize('grep -E "a|b;c" f | head -3; git status'),
+                         [["grep", "-E", "a|b;c", "f"], ["head", "-3"], ["git", "status"]])
+        self.assertEqual(guards.tokenize("grep 'x' f 2>/dev/null && ls 2>&1"),
+                         [["grep", "x", "f"], ["ls"]])
+        self.assertEqual(guards.tokenize('echo "a\\"b" c\\ d'), [['echo', 'a"b', 'c d']])
+
+    def test_globs_expand_against_the_working_directory(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as d:
+            os.makedirs(os.path.join(d, "config"))
+            os.makedirs(os.path.join(d, "src"))
+            for f in ("config/app.yml", "config/server.key", "src/a.ts", ".env"):
+                open(os.path.join(d, f), "w").close()
+            self.assertTrue(guards.check_command("cat src/*", cwd=d)[0])
+            self.assertTrue(guards.check_command("ls -la *", cwd=d)[0])  # `*` skips .env, like the shell
+            self.assertFalse(guards.check_command("cat config/*", cwd=d)[0])
+            self.assertFalse(guards.check_command("cd config && cat *", cwd=d)[0])
+            self.assertFalse(guards.check_command("cat .*", cwd=d)[0])
 
     def test_exact_health_check_allowed(self):
         self.assertTrue(guards.check_command("npm run build --silent", ["npm run build --silent"])[0])

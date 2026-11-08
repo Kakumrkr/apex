@@ -6,9 +6,9 @@ auditor, and skips the permission prompt for provably read-only actions.
 from __future__ import annotations
 
 import fnmatch
+import glob as _glob
 import os
 import re
-import shlex
 
 from . import is_auditor
 from .secrets import is_secret_path
@@ -48,7 +48,7 @@ def guard_writes(event: dict):
     relp, inside = _rel(event, str(path))
     if inside and (relp in MANAGED or any(relp.startswith(d) for d in MANAGED_DIRS)):
         return ("deny", f"{relp} is managed by Apex and is append-only/immutable. "
-                "Use /apex:init (North Star), /apex:defer (decisions), or apex.py — never edit it directly.")
+                "Use /apex:init (North Star), /apex:defer (decisions), or apex.py. Never edit it directly.")
     if not auditor:
         return None
     if inside and relp == ".apex/roadmap.md":
@@ -64,7 +64,7 @@ def guard_writes(event: dict):
     if mem and mem.group(1).startswith("apex") and full.endswith(".md"):
         return ("allow", "Apex auditor: agent memory")
     return ("deny", f"Apex auditor is read-only for your code. It may only write .apex/roadmap.md, "
-            f".apex/sessions/S-###-*.md, .apex/research/*.md|json and its agent memory — not {relp}.")
+            f".apex/sessions/S-###-*.md, .apex/research/*.md|json and its agent memory, not {relp}.")
 
 
 # ---------------------------------------------------------------- reads
@@ -99,13 +99,24 @@ JS_RUNNERS = {"npx", "pnpm", "yarn", "bun", "bunx", "npm"}
 PY_MODULES = {"pytest", "ruff", "mypy", "pyright", "pip", "pip_audit", "compileall", "unittest", "black", "isort"}
 AUDITOR_APEX_SUBS = {("status",), ("lint",), ("health",), ("detect",), ("version",), ("session", "list"),
                      ("session", "show"), ("session", "check"), ("decision", "list")}
-_END = r"(?=\s|$|[;&|])"
-DEVNULL = re.compile(r"(?<!\S)(?:\d?>>?|&>)\s*/dev/null" + _END + r"|(?<!\S)2>&1" + _END)
+# Sample names an unquoted glob must not be able to expand to (e.g. `cat .e*`, `cat *.pem`).
+SECRET_SAMPLES = (".env", ".env.local", ".env.production", "id_rsa", "id_ed25519", "server.pem", "tls.key",
+                  "credentials.json", "service-account.json", ".npmrc", ".netrc", ".pgpass", "secrets.yaml",
+                  "prod.tfvars", "keystore.jks", "cert.p12")
+GREP_RECURSIVE = {"-r", "-R", "--recursive", "--dereference-recursive"}
+RG_UNHIDE = {"--hidden", "--no-ignore", "--no-ignore-dot", "--no-ignore-vcs", "--no-ignore-files", "-.", "-u",
+             "-uu", "-uuu", "--unrestricted"}
 SED_PRINT = re.compile(r"^(?:\d+|\$)(?:,(?:\d+|\$))?p$")
 
 
 class Blocked(Exception):
     pass
+
+
+class Word(str):
+    """A shell word. `glob`/`brace` record unquoted `*?[` / `{` (expansion candidates)."""
+    glob = False
+    brace = False
 
 
 def _flags(args, *bad):
@@ -232,7 +243,30 @@ def _check_python(args):
     raise Blocked("python may only run `-m <read-only tool>` or Apex's apex.py (no -c / scripts)")
 
 
-def _check_segment(argv: list[str]):
+def _glob_reaches_secret(tok: str, cwd: str | None) -> bool:
+    """Could this unquoted glob expand to a secret file?
+
+    With a known working directory, expand it the way the shell would (Python's
+    glob, like the shell, skips dotfiles unless the pattern starts with a dot).
+    Patterns with a literal part (`*.pem`, `.e*`) are also checked against sample
+    secret names, so they're denied even where no such file exists yet.
+    """
+    if cwd and os.path.isdir(cwd):
+        path = os.path.expanduser(tok)
+        try:
+            matches = _glob.glob(path if os.path.isabs(path) else os.path.join(cwd, path))
+        except (OSError, ValueError, RecursionError):
+            return True
+        if any(is_secret_path(m) for m in matches[:5000]):
+            return True
+    pat = os.path.basename(tok.rstrip("/")) or tok
+    if not pat.strip("*?"):
+        return False  # a bare `*`: only the filesystem expansion above can judge it
+    return any(fnmatch.fnmatch(sample, pat) for sample in SECRET_SAMPLES
+               if pat.startswith(".") or not sample.startswith("."))
+
+
+def _check_segment(argv: list[str], cwd: str | None = None):
     while argv and re.match(r"^[A-Za-z_][A-Za-z0-9_]*=", argv[0]):
         name, _, _val = argv[0].partition("=")
         if name not in SAFE_ENV:
@@ -241,14 +275,18 @@ def _check_segment(argv: list[str]):
     if not argv:
         return
     for tok in argv:
-        if is_secret_path(tok) or any(is_secret_path(p) for p in tok.split("=")[1:]):
+        if any(is_secret_path(p) for p in re.split(r"[=:]", tok) if p):
             raise Blocked(f"{tok} looks like a secret file")
+        if getattr(tok, "brace", False) and re.search(r"\{[^{}]*(?:,|\.\.)[^{}]*\}", tok):
+            raise Blocked(f"brace expansion in {tok} is not allowed (list the paths explicitly)")
+        if getattr(tok, "glob", False) and _glob_reaches_secret(tok, cwd):
+            raise Blocked(f"the glob {tok} could match secret files; name the files explicitly")
     prog, args = argv[0], argv[1:]
     if prog == "timeout":
         rest = [a for a in args if not a.startswith("-")]
         if len(rest) < 2:
             raise Blocked("timeout needs a duration and a command")
-        return _check_segment(args[args.index(rest[0]) + 1:])
+        return _check_segment(args[args.index(rest[0]) + 1:], cwd)
     if prog == "cd":
         return
     m = re.fullmatch(r"(?:\./)?node_modules/\.bin/([\w.-]+)", prog)
@@ -262,11 +300,17 @@ def _check_segment(argv: list[str]):
             return _check_apex([prog] + args)
         raise Blocked(f"running {prog} directly is not allowed")
     if prog == "sed":
-        # Only `sed -n <range>p [files]` — sed scripts can otherwise write (w) or execute (e).
+        # Only `sed -n <range>p [files]`: sed scripts can otherwise write (w) or execute (e).
         if len(args) >= 2 and args[0] == "-n" and SED_PRINT.match(args[1]) and not any(a.startswith("-") for a in args[2:]):
             return
         raise Blocked("only `sed -n <start>,<end>p <file>` is allowed (use Read for files)")
     if prog in SIMPLE_READONLY:
+        if prog in ("grep", "egrep", "fgrep") and any(
+                a in GREP_RECURSIVE or re.fullmatch(r"-[A-Za-z]*[rR][A-Za-z]*", a) for a in args):
+            raise Blocked("recursive grep can read .env and key files; use `rg` (skips hidden and "
+                          "git-ignored files) or the Grep tool")
+        if prog == "rg" and any(a in RG_UNHIDE or re.fullmatch(r"-[A-Za-z]*u[A-Za-z]*", a) for a in args):
+            raise Blocked("rg --hidden/--no-ignore/-u can read .env and key files")
         if prog == "find" and FIND_BAD & set(args):
             raise Blocked("find with -exec/-delete/-fprint is not allowed")
         if prog == "sort":
@@ -325,41 +369,130 @@ def _check_js_runner(prog, args):
                   "(`apex.py health`)")
 
 
-def check_command(cmd: str, allowed_exact: list[str] | tuple = ()) -> tuple[bool, str]:
+_OPERATORS = ("&&", "||", ";;", "|&", "&>", ">>", ">&", "<<", "<&", "<>", "|", ";", "&", ">", "<", "(", ")")
+_SEPARATORS = {"&&", "||", "|", ";"}
+_DOLLAR_EXPANSION = re.compile(r"[A-Za-z_{(0-9@*#?!$-]")
+
+
+def tokenize(cmd: str) -> list[list[str]]:
+    """Split a one-line shell command into pipeline segments of words.
+
+    A small POSIX-style state machine: operators are recognised only outside
+    quotes, so `grep -E "a|b;c"` stays one word. Raises Blocked for anything
+    the auditor may not use (substitution, expansion, redirection to files,
+    background jobs, subshells). `>/dev/null`, `2>/dev/null`, `&>/dev/null`
+    and `N>&M` are accepted and dropped.
+    """
+    segments: list[list[str]] = [[]]
+    word: list[str] = []
+    in_word = quoted = globby = brace = False
+    i, n = 0, len(cmd)
+
+    def flush():
+        nonlocal word, in_word, quoted, globby, brace
+        if in_word:
+            w = Word("".join(word))
+            w.glob, w.brace = globby, brace
+            segments[-1].append(w)
+        word, in_word, quoted, globby, brace = [], False, False, False, False
+
+    while i < n:
+        ch = cmd[i]
+        if ch == "'":
+            j = cmd.find("'", i + 1)
+            if j < 0:
+                raise Blocked("could not parse command (unterminated single quote)")
+            word.append(cmd[i + 1:j])
+            in_word = quoted = True
+            i = j + 1
+            continue
+        if ch == '"':
+            i += 1
+            while True:
+                if i >= n:
+                    raise Blocked("could not parse command (unterminated double quote)")
+                c = cmd[i]
+                if c == '"':
+                    i += 1
+                    break
+                if c == "\\" and i + 1 < n and cmd[i + 1] in '"\\$`':
+                    word.append(cmd[i + 1])
+                    i += 2
+                    continue
+                if c == "`" or (c == "$" and i + 1 < n and _DOLLAR_EXPANSION.match(cmd[i + 1])):
+                    raise Blocked("command substitution and variable expansion are not allowed")
+                word.append(c)
+                i += 1
+            in_word = quoted = True
+            continue
+        if ch == "\\":
+            if i + 1 < n:
+                word.append(cmd[i + 1])
+            in_word = quoted = True
+            i += 2
+            continue
+        if ch == "`" or (ch == "$" and i + 1 < n and _DOLLAR_EXPANSION.match(cmd[i + 1])):
+            raise Blocked("command substitution and variable expansion are not allowed")
+        if ch in " \t":
+            flush()
+            i += 1
+            continue
+        op = next((o for o in _OPERATORS if cmd.startswith(o, i)), None)
+        if op is None:
+            word.append(ch)
+            in_word = True
+            globby = globby or ch in "*?["
+            brace = brace or ch == "{"
+            i += 1
+            continue
+        # Redirections: `N>`, `N>>`, `N>&M`, `&>`, `>`, `>>`. Only /dev/null and fd dups.
+        fd = "".join(word) if in_word and not quoted and "".join(word).isdigit() else None
+        if op in (">", ">>", ">&", "&>"):
+            if fd is not None:
+                word, in_word = [], False
+            else:
+                flush()
+            i += len(op)
+            if op == ">&" and fd is not None:
+                m = re.match(r"\d+(?=$|[\s;&|])", cmd[i:])
+                if not m:
+                    raise Blocked("redirection to files is not allowed (only >/dev/null and 2>&1)")
+                i += m.end()
+                continue
+            m = re.match(r"[ \t]*/dev/null(?=$|[\s;&|])", cmd[i:])
+            if not m:
+                raise Blocked("redirection to files is not allowed (only >/dev/null and 2>&1)")
+            i += m.end()
+            continue
+        flush()
+        if op in _SEPARATORS:
+            segments.append([])
+            i += len(op)
+            continue
+        if op in ("<", "<<", "<&", "<>"):
+            raise Blocked("input redirection is not allowed (pass file names as arguments)")
+        raise Blocked(f"shell operator {op!r} is not allowed")
+    flush()
+    return segments
+
+
+def check_command(cmd: str, allowed_exact: list[str] | tuple = (), cwd: str | None = None) -> tuple[bool, str]:
     """Is `cmd` safe for the read-only auditor? Returns (ok, reason)."""
     cmd = (cmd or "").strip()
     if not cmd:
         return False, "empty command"
     if cmd in {c.strip() for c in allowed_exact}:
         return True, "configured health check"
-    if "\n" in cmd or "\r" in cmd:
+    if "\n" in cmd or "\r" in cmd or "\0" in cmd:
         return False, "multi-line commands are not allowed"
-    if "`" in cmd or "$(" in cmd or "<(" in cmd or ">(" in cmd:
-        return False, "command substitution is not allowed"
-    cleaned = DEVNULL.sub(" ", cmd)
     try:
-        lex = shlex.shlex(cleaned, posix=True, punctuation_chars=True)
-        lex.whitespace_split = True
-        tokens = list(lex)
-    except ValueError as exc:
-        return False, f"could not parse command ({exc})"
-    segments, cur = [], []
-    for tok in tokens:
-        if tok and set(tok) <= set("();<>|&"):
-            if tok in ("&&", "||", "|", ";"):
-                segments.append(cur)
-                cur = []
-                continue
-            if ">" in tok or "<" in tok:
-                return False, "redirection to files is not allowed (only >/dev/null and 2>&1)"
-            return False, f"shell operator {tok!r} is not allowed"
-        cur.append(tok)
-    segments.append(cur)
-    try:
-        for seg in segments:
+        for seg in tokenize(cmd):
             if not seg:
                 raise Blocked("empty pipeline segment")
-            _check_segment(seg)
+            _check_segment(seg, cwd)
+            if seg[0] == "cd" and cwd:  # later segments' globs expand relative to the new directory
+                target = os.path.expanduser(seg[1]) if len(seg) > 1 else os.path.expanduser("~")
+                cwd = os.path.normpath(os.path.join(cwd, target))
     except Blocked as exc:
         return False, str(exc)
     return True, "read-only command"
@@ -369,8 +502,8 @@ def guard_bash(event: dict, allowed_exact=()):
     if not is_auditor(event.get("agent_type")):
         return None
     cmd = (event.get("tool_input") or {}).get("command", "")
-    ok, reason = check_command(cmd, allowed_exact)
+    ok, reason = check_command(cmd, allowed_exact, event.get("cwd") or os.environ.get("CLAUDE_PROJECT_DIR"))
     if ok:
         return ("allow", f"Apex auditor: {reason}")
-    return ("deny", f"Apex auditor is read-only — blocked: {reason}. "
+    return ("deny", f"Apex auditor is read-only. Blocked: {reason}. "
             "Run configured checks with `apex.py health`; inspect code with Read/Grep/Glob.")
