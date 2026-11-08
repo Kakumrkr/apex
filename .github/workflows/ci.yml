@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: tests (py${{ matrix.python }} · ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python: ["3.9", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Unit tests (stdlib only)
+        run: python -m unittest discover tests -v
+      - name: Zero-token demo — lint must be clean
+        run: python scripts/apex.py lint --project-dir examples/demo-saas
+      - name: Zero-token demo — status renders
+        run: python scripts/apex.py status --project-dir examples/demo-saas
+
+  plugin:
+    name: plugin manifest, hooks & installers
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: JSON files parse
+        run: for f in .claude-plugin/*.json hooks/hooks.json examples/demo-saas/.apex/*.json; do python3 -m json.tool "$f" > /dev/null || exit 1; done
+      - name: Validate plugin with Claude Code
+        run: |
+          npm install -g @anthropic-ai/claude-code
+          claude plugin validate .
+      - name: Shellcheck
+        run: shellcheck scripts/install-codex.sh
+      - name: Codex installer smoke test
+        run: |
+          tmp="$(mktemp -d)"
+          bash scripts/install-codex.sh "$tmp/.agents"
+          test -f "$tmp/.agents/skills/apex-audit/SKILL.md"
+          ! grep -R 'CLAUDE_PLUGIN_ROOT' "$tmp/.agents/skills"
+          python3 "$tmp/.agents/apex/scripts/apex.py" version
+      - name: Hook smoke test (auditor push is denied)
+        run: |
+          out=$(echo '{"agent_type":"apex-auditor","tool_name":"Bash","tool_input":{"command":"git push"}}' \
+            | python3 -I scripts/apex.py hook guard-bash)
+          echo "$out" | grep -q '"permissionDecision": "deny"'
