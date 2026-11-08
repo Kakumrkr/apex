@@ -25,10 +25,12 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Unit tests (stdlib only)
         run: python -m unittest discover tests -v
-      - name: Zero-token demo — lint must be clean
+      - name: Zero-token demo lint must be clean
         run: python scripts/apex.py lint --project-dir examples/demo-saas
-      - name: Zero-token demo — status renders
+      - name: Zero-token demo status renders
         run: python scripts/apex.py status --project-dir examples/demo-saas
+      - name: Doctor (wiring + live guardrail self-test)
+        run: python scripts/apex.py doctor
 
   plugin:
     name: plugin manifest, hooks & installers
@@ -51,6 +53,7 @@ jobs:
           tmp="$(mktemp -d)"
           bash scripts/install-codex.sh "$tmp/.agents"
           test -f "$tmp/.agents/skills/apex-audit/SKILL.md"
+          test -f "$tmp/.agents/skills/apex-doctor/SKILL.md"
           ! grep -R 'CLAUDE_PLUGIN_ROOT' "$tmp/.agents/skills"
           python3 "$tmp/.agents/apex/scripts/apex.py" version
       - name: Hook smoke test (auditor push is denied)

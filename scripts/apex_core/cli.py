@@ -30,7 +30,7 @@ def build_parser() -> argparse.ArgumentParser:
                         help="project root (default: $CLAUDE_PROJECT_DIR or cwd)")
     common.add_argument("--json", action="store_true", default=argparse.SUPPRESS, help="machine-readable output")
     ap = argparse.ArgumentParser(prog="apex.py", parents=[common],
-                                 description="Apex — deterministic bookkeeping for the Apex Claude Code plugin.")
+                                 description="Apex: deterministic bookkeeping for the Apex Claude Code plugin.")
     sub = ap.add_subparsers(dest="cmd", required=True)
     sp = lambda name, **kw: sub.add_parser(name, parents=[common], **kw)  # noqa: E731
 
@@ -47,6 +47,8 @@ def build_parser() -> argparse.ArgumentParser:
     fp = sp("finalize-audit", help="lint, compute tier, update state.json, snapshot history")
     fp.add_argument("--date", help=argparse.SUPPRESS)
     sp("migrate", help="upgrade config/state schema")
+    dr = sp("doctor", help="check plugin wiring, live guardrails, settings, and .apex/ integrity")
+    dr.add_argument("--no-selftest", action="store_true", help="skip running the hooks")
 
     lk = sp("lock", help="audit lock")
     lk.add_argument("action", choices=["acquire", "release", "status"])
@@ -118,6 +120,12 @@ def main(argv=None) -> int:
         elif args.cmd == "finalize-audit":
             res = audit.finalize(p, today=args.date)
             _out(res, True)
+        elif args.cmd == "doctor":
+            from . import doctor
+            res = doctor.run(p, selftest=not args.no_selftest)
+            _out({"checks": res.items, "failed": res.count("fail"), "warnings": res.count("warn")},
+                 as_json, doctor.text(res))
+            return 1 if res.count("fail") else 0
         elif args.cmd == "migrate":
             notes = migrate(p)
             _out(notes, as_json, "\n".join(notes) or "already up to date")

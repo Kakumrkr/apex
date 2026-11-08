@@ -36,5 +36,5 @@ for dir in "$SRC"/skills/*/; do
 done
 
 echo "Apex installed for Codex at $DEST (prompt-only mode)."
-echo "Skills: \$apex-init, \$apex-audit, \$apex-run-session, \$apex-status, \$apex-defer"
+echo "Skills: \$apex-init, \$apex-audit, \$apex-run-session, \$apex-status, \$apex-defer, \$apex-doctor"
 echo "Note: Claude Code's hook guardrails don't run in Codex; see docs/codex.md."
