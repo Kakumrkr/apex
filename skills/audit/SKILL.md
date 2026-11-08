@@ -72,5 +72,11 @@ Skip triage if the owner said to accept everything.
 - Name the next command: `/apex:run-session <first ready id>`. If several
   parallel-safe sessions are ready, mention running them in separate git worktrees.
 
+## Other agents (e.g. Codex)
+If you have no subagent tool, perform the protocol in
+`${CLAUDE_PLUGIN_ROOT}/agents/apex-auditor.md` yourself, with the same inputs and
+rules. No hooks enforce them there, so be strict: write only the `.apex/`
+files it names. If AskUserQuestion isn't available, ask the triage questions in chat.
+
 ## Failure handling
 On any error after `lock acquire`, run `APEX lock release` before stopping.

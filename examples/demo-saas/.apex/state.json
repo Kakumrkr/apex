@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "last_audit_sha": "c47e9f2",
+  "last_audit_date": "2026-11-07",
+  "last_mode": "standard",
+  "tier": 2,
+  "score": 6.8,
+  "history": [
+    {
+      "date": "2026-09-14",
+      "sha": "3f9c2e1",
+      "score": 3.8,
+      "tier": 1,
+      "mode": "full",
+      "research": "light",
+      "dimensions": {
+        "core_loop": 4.5,
+        "data_integrity": 3.5,
+        "ux_onboarding": 3.5,
+        "code_health": 4.0,
+        "resilience": 3.0,
+        "performance": 5.0,
+        "testing": 2.5,
+        "security": 4.0
+      },
+      "health": "partial"
+    },
+    {
+      "date": "2026-10-12",
+      "sha": "8b21d0a",
+      "score": 5.1,
+      "tier": 2,
+      "mode": "standard",
+      "research": "full",
+      "dimensions": {
+        "core_loop": 5.5,
+        "data_integrity": 5.5,
+        "ux_onboarding": 4.5,
+        "code_health": 5.5,
+        "resilience": 4.0,
+        "performance": 5.0,
+        "testing": 4.5,
+        "security": 5.0
+      },
+      "health": "pass"
+    },
+    {
+      "date": "2026-11-07",
+      "sha": "c47e9f2",
+      "score": 6.8,
+      "tier": 2,
+      "mode": "standard",
+      "research": "full",
+      "dimensions": {
+        "core_loop": 8.0,
+        "data_integrity": 7.0,
+        "ux_onboarding": 6.5,
+        "code_health": 7.5,
+        "resilience": 6.0,
+        "performance": 6.5,
+        "testing": 6.0,
+        "security": 6.0
+      },
+      "health": "pass"
+    }
+  ]
+}

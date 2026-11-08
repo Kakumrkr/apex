@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "stack": [
+    "javascript",
+    "typescript",
+    "next",
+    "react"
+  ],
+  "package_manager": "pnpm",
+  "health_checks": [
+    {
+      "name": "typecheck",
+      "cmd": "pnpm exec tsc --noEmit",
+      "required": true,
+      "timeout": 300
+    },
+    {
+      "name": "lint",
+      "cmd": "pnpm run lint",
+      "required": false,
+      "timeout": 300
+    },
+    {
+      "name": "test",
+      "cmd": "pnpm run test",
+      "required": false,
+      "timeout": 600
+    },
+    {
+      "name": "build",
+      "cmd": "pnpm run build",
+      "required": true,
+      "timeout": 600
+    }
+  ],
+  "research": {
+    "enabled": true,
+    "refresh_days": 28
+  },
+  "tier_hysteresis": 0.3,
+  "banner": true,
+  "stale_audit_days": 14
+}

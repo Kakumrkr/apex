@@ -1,0 +1,29 @@
+{
+ "urls": {
+  "https://acmetasks.example.com/features": {
+   "domain": "acmetasks.example.com",
+   "tool": "WebFetch",
+   "first_seen": "2026-10-12T10:02:11"
+  },
+  "https://acmetasks.example.com/pricing": {
+   "domain": "acmetasks.example.com",
+   "tool": "WebSearch",
+   "first_seen": "2026-10-12T10:01:40"
+  },
+  "https://forum.example.com/t/acme-tasks-weekly-planning-is-painful/4411": {
+   "domain": "forum.example.com",
+   "tool": "WebSearch",
+   "first_seen": "2026-10-12T10:03:05"
+  },
+  "https://boardly.example.com/templates": {
+   "domain": "boardly.example.com",
+   "tool": "WebFetch",
+   "first_seen": "2026-11-07T09:12:51"
+  },
+  "https://reviews.example.com/boardly/cons": {
+   "domain": "reviews.example.com",
+   "tool": "WebSearch",
+   "first_seen": "2026-11-07T09:14:20"
+  }
+ }
+}

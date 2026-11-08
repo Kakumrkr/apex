@@ -27,3 +27,5 @@ command). Arguments: `$ARGUMENTS`
 5. Confirm in one line with the new decision ID. `.apex/decisions.md` is
    append-only: Claude's Write/Edit tools are blocked on it by design, so all
    changes go through this skill or the CLI.
+
+_If AskUserQuestion isn't available (e.g. in Codex), ask the same questions in chat._

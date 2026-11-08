@@ -13,11 +13,11 @@ SPARK = "▁▂▃▄▅▆▇█"
 
 
 def sparkline(values: list[float]) -> str:
-    return "".join(SPARK[min(7, max(0, int(round((v - 1) / 9 * 7))))] for v in values)
+    return "".join(SPARK[min(7, max(0, int((v - 1) / 9 * 7 + 0.5)))] for v in values)
 
 
 def bar(v: float, width: int = 10) -> str:
-    filled = int(round(v / 10 * width))
+    filled = min(width, int(v / 10 * width + 0.5))
     return "█" * filled + "░" * (width - filled)
 
 
@@ -162,7 +162,10 @@ def trend_region(history: list[dict]) -> str:
 
 
 def sessions_region(p: ApexPaths) -> str:
-    pkts = [s for s in sessions.load_all(p) if s.get("status") != "dropped"]
+    allp = [s for s in sessions.load_all(p) if s.get("status") != "dropped"]
+    done = [s for s in allp if s.get("status") == "done"]
+    hidden = done[:-5]  # keep the roadmap lean: active packets + the 5 most recent done
+    pkts = [s for s in allp if s not in hidden]
     if not pkts:
         return "_No session packets yet._"
     rows = ["| ID | Session | Model | Parallel | Depends on | Est. | Packet |",
@@ -185,4 +188,6 @@ def sessions_region(p: ApexPaths) -> str:
               "    classDef blocked fill:#fee2e2,stroke:#dc2626,color:#7f1d1d",
               "    classDef todo fill:#f3f4f6,stroke:#6b7280,color:#111827", "```"]
     note = "_Statuses live in each packet's frontmatter; run `/apex:status` for live progress._"
+    if hidden:
+        note = f"_{len(hidden)} older completed session(s) omitted — see `.apex/sessions/`._ " + note
     return "\n".join(rows) + "\n\n" + "\n".join(graph) + "\n\n" + note

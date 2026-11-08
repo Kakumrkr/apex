@@ -66,7 +66,7 @@ def _num(cell: str):
     return float(m.group(0)) if m else None
 
 
-def lint_scorecard(p: ApexPaths, r: Report, text: str, state: dict) -> dict | None:
+def lint_scorecard(p: ApexPaths, r: Report, text: str, state: dict, audit_ctx: bool = False) -> dict | None:
     card, err = md.json_block(text, "scorecard")
     if err:
         r.error("scorecard", err, p.roadmap)
@@ -114,9 +114,9 @@ def lint_scorecard(p: ApexPaths, r: Report, text: str, state: dict) -> dict | No
             if hj["status"] != health:
                 r.error("health-mismatch", f"scorecard says health '{health}' but .apex/.health.json recorded '{hj['status']}' — "
                         "report what the checks actually returned", p.roadmap)
-        else:
+        elif audit_ctx:
             r.warn("health-stale", ".apex/.health.json is from another commit; re-run `apex.py health`", p.health)
-    elif health in ("pass", "fail", "partial") and load_config(p).get("health_checks"):
+    elif audit_ctx and health in ("pass", "fail", "partial") and load_config(p).get("health_checks"):
         r.warn("health-evidence", "no .apex/.health.json evidence; run `apex.py health` during the audit", p.roadmap)
     prev = state.get("score")
     if isinstance(prev, (int, float)) and abs(float(overall) - prev) > BIG_DELTA:
@@ -350,7 +350,7 @@ def run(p: ApexPaths, require_roadmap: bool = False) -> Report:
         for sec in REQUIRED_SECTIONS:
             if not any(h.startswith(md.norm_heading(sec)) for h in heads):
                 r.error("roadmap", f"missing '## {sec}' section", p.roadmap)
-        card = lint_scorecard(p, r, text, state)
+        card = lint_scorecard(p, r, text, state, audit_ctx=require_roadmap)
         lint_parity(p, r, text, card)
         opp_slugs = lint_opportunities(p, r, text, decisions)
     lint_sessions(p, r, opp_slugs)

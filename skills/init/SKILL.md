@@ -56,3 +56,5 @@ Show the North Star and the approved checks. Then tell the owner:
   gitignored if competitor notes are private.
 - Next step: `/apex:audit` (the first audit is a full scan; later audits are
   incremental).
+
+_If AskUserQuestion isn't available (e.g. in Codex), ask the same questions in chat._
