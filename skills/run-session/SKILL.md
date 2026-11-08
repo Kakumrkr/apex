@@ -1,12 +1,12 @@
 ---
 name: run-session
-description: Execute one Apex session packet end to end — preflight, implement within the packet's target files, run its Definition-of-Done checks, mark it done, and commit atomically. Use after /apex:audit has produced packets.
+description: Execute one Apex session packet end to end. Preflight, implement within the packet's target files, run its Definition-of-Done checks, mark it done, and commit atomically. Use after /apex:audit has produced packets.
 argument-hint: "<session-id e.g. S-003> [--branch | --worktree]"
 disable-model-invocation: true
 allowed-tools: Bash(python3 *), Bash(git status *), Bash(git diff *), Bash(git add *), Bash(git commit *), Bash(git switch *), Read, Grep, Glob, Edit, Write
 ---
 
-# /apex:run-session — execute one session packet
+# /apex:run-session
 
 APEX = `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/apex.py"` (always type the full
 command). Arguments: `$ARGUMENTS`
@@ -66,7 +66,7 @@ file that exists. Don't open `do_not_touch` paths for editing.
 1. `APEX session set-status <id> done`
 2. Stage only this session's files plus the packet file:
    `git add <changed target/test files> .apex/sessions/<packet file>`
-3. `git commit -m "feat(apex): <id> <title>"`, with a 2–4 line body summarizing
+3. `git commit -m "feat(apex): <id> <title>"`, with a 2-4 line body summarizing
    the change and the DoD evidence. Never push.
 
 **If the DoD still fails after 3 cycles:** run

@@ -2,7 +2,7 @@
 
 Path: `.apex/sessions/S-###-<slug>.md`. The filename must equal `<id>-<slug>.md`.
 A packet must be self-contained: a fresh session with no other context should be
-able to execute it in 1–2 hours.
+able to execute it in 1-2 hours.
 
 ```markdown
 ---

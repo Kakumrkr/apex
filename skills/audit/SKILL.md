@@ -1,12 +1,12 @@
 ---
 name: audit
-description: Run an Apex audit — measure progress since the last audit, verify health with real checks, score the project 1.0-10.0 against an evidence rubric, benchmark competitors, and refresh .apex/roadmap.md plus 1-2 hour session packets. Then triage the proposals with the owner.
+description: Run an Apex audit. Measures progress since the last audit, verifies health with real checks, scores the project 1.0-10.0 against an evidence rubric, benchmarks competitors, and refreshes .apex/roadmap.md plus 1-2 hour session packets. Then triage the proposals with the owner.
 argument-hint: "[quick|standard|full] [--refresh]"
 disable-model-invocation: true
 allowed-tools: Bash(python3 *), Bash(git rev-parse *), Bash(git status *), Read, Grep, Glob
 ---
 
-# /apex:audit — orchestrate an audit, then triage with the owner
+# /apex:audit
 
 You are the **orchestrator** in the main conversation. The heavy, read-only audit
 runs in the `apex-auditor` subagent. Your jobs are setup, delegation, finalization,
@@ -46,7 +46,7 @@ Return the ≤15-line summary when lint passes.
 ## 3. Finalize (deterministic)
 - Run `APEX lint --require-roadmap`. If it fails, send the errors back to the
   auditor **once** (SendMessage to the same agent, or a new Agent call with the
-  lint output). Never fix the roadmap yourself — that would bypass the
+  lint output). Never fix the roadmap yourself; that would bypass the
   evidence checks. If it still fails, run `APEX lock release`, report, and stop.
 - Run `APEX finalize-audit`. It computes the tier (with hysteresis), updates
   `state.json`, regenerates the trend and session regions, writes the immutable
@@ -68,7 +68,7 @@ Skip triage if the owner said to accept everything.
 
 ## 5. Hand-off
 - `APEX status` (show the dashboard).
-- Suggest committing `.apex/` (e.g. `chore(apex): audit YYYY-MM-DD — score X.X`).
+- Suggest committing `.apex/` (e.g. `chore(apex): audit YYYY-MM-DD, score X.X`).
   Don't commit unless the owner asks.
 - Name the next command: `/apex:run-session <first ready id>`. If several
   parallel-safe sessions are ready, mention running them in separate git worktrees.

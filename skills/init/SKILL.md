@@ -1,12 +1,12 @@
 ---
 name: init
-description: Set up Apex in this project — interview the owner to lock the Product North Star (audience, value proposition, competitors, non-goals) and confirm which non-destructive health checks Apex may run. Use once per project, before /apex:audit.
+description: Set up Apex in this project. Interviews the owner to lock the Product North Star (audience, value proposition, competitors, non-goals) and confirms which non-destructive health checks Apex may run. Use once per project, before /apex:audit.
 argument-hint: "[--force]"
 disable-model-invocation: true
 allowed-tools: Bash(python3 *), Read, Grep, Glob
 ---
 
-# /apex:init — lock the Product North Star
+# /apex:init
 
 You are setting up **Apex**, a read-only project auditor, in the current project.
 The CLI is `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/apex.py"` (call it APEX below;

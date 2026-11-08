@@ -1,6 +1,6 @@
 ---
 name: status
-description: Show the Apex dashboard for this project — score and trend, tier, health, dimension bars, sessions ready to run (and which can run in parallel), and the decisions log. Cheap, read-only, and needs no web access.
+description: Show the Apex dashboard for this project, with score and trend, tier, health, dimension bars, sessions ready to run (and which can run in parallel), and the decisions log. Cheap, read-only, and needs no web access.
 model: sonnet
 effort: low
 allowed-tools: Bash(python3 *)

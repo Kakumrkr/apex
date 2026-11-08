@@ -6,7 +6,7 @@ disable-model-invocation: true
 allowed-tools: Bash(python3 *), Read
 ---
 
-# /apex:defer — log a Won't Fix / Deferred decision
+# /apex:defer
 
 APEX = `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/apex.py"` (always type the full
 command). Arguments: `$ARGUMENTS`
